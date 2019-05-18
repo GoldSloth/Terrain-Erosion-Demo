@@ -1,0 +1,21 @@
+{
+  "name": "terrain-erosion-demo",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "http-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GolddolphinSKB-Fexcraftian/Terrain-Erosion-Demo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GolddolphinSKB-Fexcraftian/Terrain-Erosion-Demo/issues"
+  },
+  "homepage": "https://github.com/GolddolphinSKB-Fexcraftian/Terrain-Erosion-Demo#readme",
+  "dependencies": {
+    "http-server": "^0.11.1"
+  }
+}

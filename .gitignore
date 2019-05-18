@@ -1,6 +1,4 @@
 node_modules/
 typings/
 jsconfig.json
-package-lock.json
-package.json
 typings.json
