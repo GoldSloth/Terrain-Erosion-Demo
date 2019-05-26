@@ -16,6 +16,7 @@
   },
   "homepage": "https://github.com/GolddolphinSKB-Fexcraftian/Terrain-Erosion-Demo#readme",
   "dependencies": {
-    "http-server": "^0.11.1"
+    "http-server": "^0.11.1",
+    "typings": "^2.1.1"
   }
 }
