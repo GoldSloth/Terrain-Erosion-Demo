@@ -14,7 +14,7 @@ scene.add(directionalLight)
 
 var magnitudeY = 6
 
-var terra = new SimplexTerrain(40, 200, 8)
+var terra = new SimplexTerrain(40, 500, 20)
 terra.generateTerrain()
 terrainColors = [
     new THREE.Vector4(0.0, 0.0, 1.0, 1.0),
@@ -49,19 +49,23 @@ var material = new THREE.ShaderMaterial({
     vertexShader: ShaderStore.vertexShader,
     fragmentShader: ShaderStore.fragmentShader(terrainColors.length)
 });
+var mat = new THREE.MeshLambertMaterial({side:THREE.DoubleSide})
 
-var mesh = terra.createMesh(material)
+var mesh = terra.createMesh(mat)
 scene.add(mesh)
 
-terra.addLayer(100, 0.5)
-terra.addLayer(50, 0.25)
-terra.addLayer(25, 0.125)
-terra.addLayer(12.5, 0.0625)
+terra.addLayer(800, 0.5)
+terra.addLayer(200, 0.35)
+terra.addLayer(100, 0.135)
+terra.addLayer(40, 0.025)
+
+function xcubed(value) {
+    return Math.pow(value, 3)
+}
+
+terra.applyFunction(xcubed)
 
 terra.scaleTerrain(5)
-
-let rain = new RainManager(0.5, 0.5, terra)
-
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -72,18 +76,23 @@ function animate() {
     requestAnimationFrame(animate);
     render();
 }
+
 let lasttime = performance.now()
 let origin = new THREE.Vector3(0, 0, 0)
-for (var i = 0; i < 100; i++) {
-    rain.runRaindrop(new THREE.Vector2((Math.random() * 196) + 2, (Math.random() * 196) + 2))
+
+let rain = new Raindrop(new THREE.Vector2(200, 200), 1, 1, 10, terra, 0.001, 1)
+
+
+
+while (!rain.isDead) {
+    rain.move()
+    rain.plotPath()
 }
+
 terra.update()
 
 function render() {
-    var time = (performance.now() - lasttime) * 0.0005;
     controls.update()
     renderer.render(scene, camera);
-    // rain.runRaindrop(new THREE.Vector2((Math.random() * 198) + 1, (Math.random() * 198) + 1))
-    // terra.update()
 }
 animate()

@@ -1,17 +1,16 @@
-function isBetween(value, lower, upper) {
-    return (value >= lower && value <= upper)
-}
-
 class Raindrop {
-    constructor(position, pickupRate, depositRate, terrain) {
+    constructor(position, pickupRate, depositRate, capacity, terrain, minVelocity, gravity) {
         this.position = position.clone()
-        this.capacity = 0
-        this.maxlife = 400
+        this.velocity = new THREE.Vector2(0, 0)
+        this.capacity = capacity
+        this.currentlyHolding = 0
         this.pickupRate = pickupRate
         this.depositRate = depositRate
-        this.velocity = new THREE.Vector2(0, 0)
-        this.isDead = false
         this.terrain = terrain
+        this.isDead = false
+        this.minVelocity = minVelocity
+        this.gravity = gravity
+
         this.lineGeom = new THREE.Geometry()
         this.lineMaterial = new THREE.LineBasicMaterial({color: 0xffefff})
         this.line = new THREE.Line(this.lineGeom, this.lineMaterial)
@@ -19,41 +18,43 @@ class Raindrop {
     }
     
     move() {
-        if (isBetween(this.position.x, 2, this.terrain.segments - 1) > 0 && isBetween(this.position.y, 2, this.terrain.segments - 1) && this.maxlife > 0) {
-            let currentHeight = this.terrain.bilerp_height(this.position.x, this.position.y)
-            let lastPos = this.position.clone()
+        let gradient = this.terrain.bilerp_gradient(this.position.x, this.position.y)
 
-            let m = this.terrain.bilerp_gradient(this.position.x, this.position.y)
-            let dx = m.x
-            let dy = m.y
+        this.velocity.add(gradient.multiplyScalar(-this.gravity))
+        this.position.add(this.velocity)
+        console.log("New Move")
+        console.log(this.position)
+        console.log(this.velocity)
 
-            this.velocity.x = dx + (this.velocity.x * 0.9)
-            this.velocity.y = dy + (this.velocity.y * 0.9)
+        let x = this.position.x
+        let y = this.position.y
 
-            // if (this.velocity.length() < 0.01) {
-            //     this.isDead = true
-            // }
-
-            this.position.add(this.velocity)
-
-            let newHeight = this.terrain.bilerp_height(this.position.x, this.position.y)
-
-            let deltaH = currentHeight - newHeight
-            if (this.capacity < 1 || this.velocity.length() > 0.05) {
-                let deltaCap = deltaH * this.pickupRate
-                this.terrain.bilerp_setHeight(lastPos.x, lastPos.y, -deltaH)
-                this.capacity += deltaCap
-            } else {
-                let deltaCap = deltaH * this.depositRate
-                this.terrain.bilerp_setHeight(lastPos.x, lastPos.y, deltaH)
-                this.capacity -= deltaCap
-            }
-            this.plotPath()
-            console.log("Velocity: " + this.velocity.length())
-            console.log("Capacity: " + this.capacity)
-            this.maxlife--
-        } else {
+        if (this.position.x <= 0 || this.position.x >= this.terrain.segments || this.position.y <= 0 || this.position.y >= this.terrain.segments) {
             this.isDead = true
+            console.log("Out of bounds")
+        }
+        let currentHeight = this.terrain.bilerp_height(x, y)
+
+        let uphill = this.terrain.bilerp_gradient(this.position.x, this.position.y).dot(this.velocity) < 0
+
+        if (this.currentlyHolding <= this.capacity) {
+            // Subtract
+            let toSubtract = Math.min(Math.abs(currentHeight - this.terrain.getSurroundingMinHeight(x, y)), this.pickupRate)
+
+            this.currentlyHolding += toSubtract
+            this.terrain.bilerp_changeHeight(x, y, -toSubtract)
+        } else {
+            if (!uphill) {
+                let toAdd = Math.min(Math.abs(this.terrain.getSurroundingMaxHeight(x, y) - currentHeight), this.depositRate, this.currentlyHolding)
+                this.currentlyHolding -= toSubtract
+                this.terrain.bilerp_changeHeight(x, y, toAdd)
+            }
+        }
+
+        // Death
+        if (this.velocity.length() < this.minVelocity) {
+            this.isDead = true
+            console.log("Too slow")
         }
     }
 
@@ -65,26 +66,3 @@ class Raindrop {
         this.lineGeom.vertices.push(pos)
     }
 }
-
-class RainManager {
-    constructor(raindropPickupRate, raindropDepositRate, terrain) {
-        this.raindropPickupRate = raindropPickupRate
-        this.raindropDepositRate = raindropDepositRate
-        this.terrain = terrain
-    }
-
-    runRaindrop(position) {
-        let raindrop = new Raindrop(position, this.raindropPickupRate, this.raindropDepositRate, this.terrain)
-        while (!raindrop.isDead) {
-            raindrop.move()
-        }
-    }
-
-    runManyRaindrops(locations) {
-        for (var place of locations) {
-            this.runRaindrop(place)
-        }
-        this.terrain.update()
-    }
-}
-
