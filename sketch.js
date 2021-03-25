@@ -14,7 +14,7 @@ scene.add(directionalLight)
 
 var magnitudeY = 6
 
-var terra = new SimplexTerrain(40, 500, 20)
+var terra = new SimplexTerrain(20, 200, 20)
 terra.generateTerrain()
 terrainColors = [
     new THREE.Vector4(0.0, 0.0, 1.0, 1.0),
@@ -80,14 +80,15 @@ function animate() {
 let lasttime = performance.now()
 let origin = new THREE.Vector3(0, 0, 0)
 
-let rain = new Raindrop(new THREE.Vector2(200, 200), 1, 1, 10, terra, 0.001, 1)
 
-
-
-while (!rain.isDead) {
-    rain.move()
-    rain.plotPath()
+for (let i=0; i<3000; i++) {
+    let rain = new Raindrop(new THREE.Vector2(Math.random() * 190 + 5, Math.random() * 190 + 5), terra)
+    while (!rain.isDead) {
+        rain.move()
+    }
 }
+
+
 
 terra.update()
 

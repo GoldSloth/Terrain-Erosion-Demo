@@ -137,7 +137,6 @@ class SimplexTerrain {
 		let hy = ly + 1
 		let dx = x - lx
 		let dy = y - ly
-
 		this.setHeight(lx, ly, this.getHeight(lx, ly) + (delta * dx * dy))
 		this.setHeight(hx, ly, this.getHeight(hx, ly) + (delta * (1 - dx) * dy))
 		this.setHeight(lx, hy, this.getHeight(lx, hy) + (delta * dx * (1 - dy)))
@@ -157,7 +156,7 @@ class SimplexTerrain {
 		)
 	}
 
-	getSurroundingMinHeight(x, y) {
+	getSurroundingMaxHeight(x, y) {
 		let lx = Math.floor(x)
 		let ly = Math.floor(y)
 		let hx = lx + 1
